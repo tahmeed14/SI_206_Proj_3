@@ -80,6 +80,11 @@ umich_tweets = get_user_tweets("umich")
 ## you should still start it in exactly the same way as if the tests did not do that! 
 # The database file should have 2 tables, and each should have the following columns... 
 
+conn = sqlite3.connect("project3_tweets.db")
+cur = conn.cursor()
+
+cur.execute('DROP TABLE IF EXISTS Tweets')
+
 # table Tweets, with columns:
 # - tweet_id (containing the string id belonging to the Tweet itself, from the data you got from Twitter) -- this column should be 
 # the PRIMARY KEY of this table
@@ -88,12 +93,21 @@ umich_tweets = get_user_tweets("umich")
 # - time_posted (the time at which the tweet was created)
 # - retweets (containing the integer representing the number of times the tweet has been retweeted)
 
+table_spec1 = 'CREATE TABLE IF NOT EXISTS Tweets (tweet_id INTEGER PRIMARY KEY, text TEXT, user_posted TEXT, time_posted TIMESTAMP, retweets INTEGER)'
+# are these correct??
+cur.execute(table_spec1)
+
+cur.execute("DROP TABLE IF EXISTS Users")
+
 # table Users, with columns:
 # - user_id (containing the string id belonging to the user, from twitter data) -- this column should be the PRIMARY KEY of this table
 # - screen_name (containing the screen name of the user on Twitter)
 # - num_favs (containing the number of tweets that user has favorited)
 # - description (text containing the description of that user on Twitter, e.g. "Lecturer IV at UMSI focusing on programming" or 
 # "I tweet about a lot of things" or "Software engineer, librarian, lover of dogs..." -- whatever it is. OK if an empty string)
+
+table_spec2 ='CREATE TABLE IF NOT EXISTS Tweets (user_id INTEGER PRIMARY KEY, screen_name TEXT, num_favs, num_favs TEXT)'
+cur.execute(table_spec2)
 
 ## You should load into the Users table:
 # The umich user, and all of the data about users that are mentioned in the umich timeline. 
@@ -113,50 +127,52 @@ umich_tweets = get_user_tweets("umich")
 
 
 
-
-
-
-
-
-
-
 ## Task 3 - Making queries, saving data, fetching data
 
 # All of the following sub-tasks require writing SQL statements and executing them using Python.
 
 # Make a query to select all of the records in the Users database. Save the list of tuples in a variable called users_info.
 
-# Make a query to select all of the user screen names from the database. Save a resulting list of strings (NOT tuples, the strings inside them!) in the variable screen_names. HINT: a list comprehension will make this easier to complete!
+# Make a query to select all of the user screen names from the database. Save a resulting list of strings (
+# NOT tuples, the strings inside them!) in the variable screen_names. HINT: a list comprehension will make this easier to complete!
 
 
-# Make a query to select all of the tweets (full rows of tweet information) that have been retweeted more than 25 times. Save the result (a list of tuples, or an empty list) in a variable called more_than_25_rts.
-
-
-
-# Make a query to select all the descriptions (descriptions only) of the users who have favorited more than 25 tweets. Access all those strings, and save them in a variable called descriptions_fav_users, which should ultimately be a list of strings.
+# Make a query to select all of the tweets (full rows of tweet information) that have been retweeted more than 25 times. 
+# Save the result (a list of tuples, or an empty list) in a variable called more_than_25_rts.
 
 
 
-# Make a query using an INNER JOIN to get a list of tuples with 2 elements in each tuple: the user screenname and the text of the tweet -- for each tweet that has been retweeted more than 50 times. Save the resulting list of tuples in a variable called joined_result.
+# Make a query to select all the descriptions (descriptions only) of the users who have favorited more than 25 tweets. 
+# Access all those strings, and save them in a variable called descriptions_fav_users, which should ultimately be a list of strings.
+
+
+
+# Make a query using an INNER JOIN to get a list of tuples with 2 elements in each tuple: the user screenname and the text of 
+# the tweet -- for each tweet that has been retweeted more than 50 times. Save the resulting list of tuples in a variable called joined_result.
 
 
 
 
 ## Task 4 - Manipulating data with comprehensions & libraries
 
-## Use a set comprehension to get a set of all words (combinations of characters separated by whitespace) among the descriptions in the descriptions_fav_users list. Save the resulting set in a variable called description_words.
+## Use a set comprehension to get a set of all words (combinations of characters separated by whitespace) among the descriptions in the 
+## descriptions_fav_users list. Save the resulting set in a variable called description_words.
 
 
 
-## Use a Counter in the collections library to find the most common character among all of the descriptions in the descriptions_fav_users list. Save that most common character in a variable called most_common_char. Break any tie alphabetically (but using a Counter will do a lot of work for you...).
+## Use a Counter in the collections library to find the most common character among all of the descriptions in the descriptions_fav_users list. 
+## Save that most common character in a variable called most_common_char. Break any tie alphabetically 
+## (but using a Counter will do a lot of work for you...).
 
 
 
 ## Putting it all together...
-# Write code to create a dictionary whose keys are Twitter screen names and whose associated values are lists of tweet texts that that user posted. You may need to make additional queries to your database! To do this, you can use, and must use at least one of: the DefaultDict container in the collections library, a dictionary comprehension, list comprehension(s). Y
+# Write code to create a dictionary whose keys are Twitter screen names and whose associated values are lists of tweet texts that that user posted. 
+# You may need to make additional queries to your database! To do this, you can use, and must use at least one of: the DefaultDict container in the 
+# collections library, a dictionary comprehension, list comprehension(s). Y
 # You should save the final dictionary in a variable called twitter_info_diction.
 
-
+conn.close()
 
 ### IMPORTANT: MAKE SURE TO CLOSE YOUR DATABASE CONNECTION AT THE END OF THE FILE HERE SO YOU DO NOT LOCK YOUR DATABASE (it's fixable, but it's a pain). ###
 
