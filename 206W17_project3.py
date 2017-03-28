@@ -13,6 +13,7 @@ import tweepy
 import twitter_info # same deal as always...
 import json
 import sqlite3
+import codecs
 
 ## Your name: Tahmeed Tureen
 ## The names of anyone you worked with on this project:
@@ -54,22 +55,34 @@ except:
 def get_user_tweets(word):
 	unique_identifier = "twitter_{}".format(word)
 
+	if unique_identifier in CACHE_DICTION:
+		tweets_retrieved = CACHE_DICTION[ unique_identifier ]
+	else:
+		tweets_retrieved = api.user_timeline(id = word)
+		CACHE_DICTION[ unique_identifier ] = tweets_retrieved
 
+		file = codecs.open(CACHE_FNAME, "w", encoding = "utf-8")
+		file.write(json.dumps(CACHE_DICTION))
+		file.close()
+
+	return tweets_retrieved
 
 
 # Write an invocation to the function for the "umich" user timeline and save the result in a variable called umich_tweets:
 
-
+umich_tweets = get_user_tweets("umich")
 
 
 ## Task 2 - Creating database and loading data into database
 
 # You will be creating a database file: project3_tweets.db
-# Note that running the tests will actually create this file for you, but will not do anything else to it like create any tables; you should still start it in exactly the same way as if the tests did not do that! 
+# Note that running the tests will actually create this file for you, but will not do anything else to it like create any tables; 
+## you should still start it in exactly the same way as if the tests did not do that! 
 # The database file should have 2 tables, and each should have the following columns... 
 
 # table Tweets, with columns:
-# - tweet_id (containing the string id belonging to the Tweet itself, from the data you got from Twitter) -- this column should be the PRIMARY KEY of this table
+# - tweet_id (containing the string id belonging to the Tweet itself, from the data you got from Twitter) -- this column should be 
+# the PRIMARY KEY of this table
 # - text (containing the text of the Tweet)
 # - user_posted (an ID string, referencing the Users table, see below)
 # - time_posted (the time at which the tweet was created)
@@ -79,19 +92,23 @@ def get_user_tweets(word):
 # - user_id (containing the string id belonging to the user, from twitter data) -- this column should be the PRIMARY KEY of this table
 # - screen_name (containing the screen name of the user on Twitter)
 # - num_favs (containing the number of tweets that user has favorited)
-# - description (text containing the description of that user on Twitter, e.g. "Lecturer IV at UMSI focusing on programming" or "I tweet about a lot of things" or "Software engineer, librarian, lover of dogs..." -- whatever it is. OK if an empty string)
+# - description (text containing the description of that user on Twitter, e.g. "Lecturer IV at UMSI focusing on programming" or 
+# "I tweet about a lot of things" or "Software engineer, librarian, lover of dogs..." -- whatever it is. OK if an empty string)
 
 ## You should load into the Users table:
 # The umich user, and all of the data about users that are mentioned in the umich timeline. 
-# NOTE: For example, if the user with the "TedXUM" screen name is mentioned in the umich timeline, that Twitter user's info should be in the Users table, etc.
+# NOTE: For example, if the user with the "TedXUM" screen name is mentioned in the umich timeline, that Twitter user's info should be in 
+# the Users table, etc.
 
 ## You should load into the Tweets table: 
 # Info about all the tweets (at least 20) that you gather from the umich timeline.
 # NOTE: Be careful that you have the correct user ID reference in the user_id column! See below hints.
 
-## HINT: There's a Tweepy method to get user info that we've looked at before, so when you have a user id or screenname you can find alllll the info you want about the user.
+## HINT: There's a Tweepy method to get user info that we've looked at before, so when you have a user id or screenname you can find alllll 
+# the info you want about the user.
 ## HINT #2: You may want to go back to a structure we used in class this week to ensure that you reference the user correctly in each Tweet record.
-## HINT #3: The users mentioned in each tweet are included in the tweet dictionary -- you don't need to do any manipulation of the Tweet text to find out which they are! Do some nested data investigation on a dictionary that represents 1 tweet to see it!
+## HINT #3: The users mentioned in each tweet are included in the tweet dictionary -- you don't need to do any manipulation of the Tweet text 
+# to find out which they are! Do some nested data investigation on a dictionary that represents 1 tweet to see it!
 
 
 
