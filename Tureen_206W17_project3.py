@@ -16,7 +16,7 @@ import sqlite3
 import codecs #Need for windows
 
 ## Your name:Tahmeed Tureen
-## The names of anyone you worked with on this project: 
+## The names of anyone you worked with on this project: Lauren Sigurdsson
 
 #####
 
@@ -71,7 +71,7 @@ def get_user_tweets(word):
 
 # Write an invocation to the function for the "umich" user timeline and save the result in a variable called umich_tweets:
 umich_tweets = get_user_tweets("umich")
-# print('right HERR')
+# print('right HERe')
 # print(len(umich_tweets))
 
 ## Task 2 - Creating database and loading data into database
@@ -80,6 +80,7 @@ umich_tweets = get_user_tweets("umich")
 # Note that running the tests will actually create this file for you, but will not do anything else to it like create any tables; 
 # you should still start it in exactly the same way as if the tests did not do that! 
 # The database file should have 2 tables, and each should have the following columns... 
+
 conn = sqlite3.connect("project3_tweets.db")
 cur = conn.cursor()
 
@@ -164,17 +165,27 @@ for tweet in umich_tweets:
 sql_state2 = "INSERT OR IGNORE INTO Tweets VALUES (?,?,?,?,?)"
 for i in tweet_list_4Tweets:
 	cur.execute(sql_state2, i)
-conn.commit()
+
+conn.commit() #COMMIT CHANGES
 
 
 ## Task 3 - Making queries, saving data, fetching data
 
 # All of the following sub-tasks require writing SQL statements and executing them using Python.
 
+
 # Make a query to select all of the records in the Users database. Save the list of tuples in a variable called users_info.
+records_stuff = "SELECT * FROM Users"
+cur.execute(records_stuff)
+users_info = cur.fetchall()
 
-# Make a query to select all of the user screen names from the database. Save a resulting list of strings (NOT tuples, the strings inside them!) in the variable screen_names. HINT: a list comprehension will make this easier to complete!
+# Make a query to select all of the user screen names from the database. Save a resulting list of strings 
+# (NOT tuples, the strings inside them!) in the variable screen_names. HINT: a list comprehension will make this easier to complete!
+user_scrn_names = "SELECT screen_name FROM Users"
+cur.execute(user_scrn_names)
+list_tup = cur.fetchall()
 
+screen_names = [str(i) for i in list_tup]
 
 # Make a query to select all of the tweets (full rows of tweet information) that have been retweeted more than 25 times. 
 # Save the result (a list of tuples, or an empty list) in a variable called more_than_25_rts.
@@ -185,27 +196,45 @@ more_than_25_rts = cur.fetchall()
 
 # Make a query to select all the descriptions (descriptions only) of the users who have favorited more than 25 tweets. 
 # Access all those strings, and save them in a variable called descriptions_fav_users, which should ultimately be a list of strings.
+desc_users_fav = "SELECT description FROM Users WHERE (num_favs > 25)"
+cur.execute(desc_users_fav)
+descriptions_fav_tups = cur.fetchall()
 
+# descriptions_fav_users = []
+# for i in descriptions_fav_tups:
+# 	descriptions_fav_users.append(str(i))
 
+descriptions_fav_users = [str(i) for i in descriptions_fav_tups]
 
 # Make a query using an INNER JOIN to get a list of tuples with 2 elements in each tuple: the user screenname and the text of the tweet 
 # -- for each tweet that has been retweeted more than 50 times. Save the resulting list of tuples in a variable called joined_result.
+query_join = "SELECT Users.screen_name, Tweets.text from Users INNER JOIN Tweets ON instr(Users.user_id, Tweets.user_id) WHERE (Tweets.retweets > 50)"
 
-
+cur.execute(query_join)
+joined_result = cur.fetchall()
 
 
 ## Task 4 - Manipulating data with comprehensions & libraries
 
-## Use a set comprehension to get a set of all words (combinations of characters separated by whitespace) among the descriptions in the descriptions_fav_users list. Save the resulting set in a variable called description_words.
+## Use a set comprehension to get a set of all words (combinations of characters separated by whitespace) among the 
+## descriptions in the descriptions_fav_users list. Save the resulting set in a variable called description_words.
 
 
 
-## Use a Counter in the collections library to find the most common character among all of the descriptions in the descriptions_fav_users list. Save that most common character in a variable called most_common_char. Break any tie alphabetically (but using a Counter will do a lot of work for you...).
+
+
+
+## Use a Counter in the collections library to find the most common character among all of the descriptions in the 
+## descriptions_fav_users list. Save that most common character in a variable called most_common_char. Break any tie alphabetically 
+## (but using a Counter will do a lot of work for you...).
+
 
 
 
 ## Putting it all together...
-# Write code to create a dictionary whose keys are Twitter screen names and whose associated values are lists of tweet texts that that user posted. You may need to make additional queries to your database! To do this, you can use, and must use at least one of: the DefaultDict container in the collections library, a dictionary comprehension, list comprehension(s). Y
+# Write code to create a dictionary whose keys are Twitter screen names and whose associated values are lists of tweet texts that 
+# that user posted. You may need to make additional queries to your database! To do this, you can use, and must use at least one of: 
+# the DefaultDict container in the collections library, a dictionary comprehension, list comprehension(s). Y
 # You should save the final dictionary in a variable called twitter_info_diction.
 
 conn.close()
