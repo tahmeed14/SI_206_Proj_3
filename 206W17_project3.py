@@ -16,7 +16,7 @@ import sqlite3
 import codecs #Need for windows
 
 ## Your name:Tahmeed Tureen
-## The names of anyone you worked with on this project: Lauren Sigurdsson
+## The names of anyone you worked with on this project: Lauren Sigurdson
 
 #####
 
@@ -130,6 +130,8 @@ cur.execute(table_spec2)
 
 # print(keys)
 
+# Must change
+
 tweet_list_4Users = []
 for tweet in umich_tweets:
 	user_id = tweet["user"]["id_str"]
@@ -175,12 +177,14 @@ conn.commit() #COMMIT CHANGES
 
 
 # Make a query to select all of the records in the Users database. Save the list of tuples in a variable called users_info.
+
 records_stuff = "SELECT * FROM Users"
 cur.execute(records_stuff)
 users_info = cur.fetchall()
 
 # Make a query to select all of the user screen names from the database. Save a resulting list of strings 
 # (NOT tuples, the strings inside them!) in the variable screen_names. HINT: a list comprehension will make this easier to complete!
+
 user_scrn_names = "SELECT screen_name FROM Users"
 cur.execute(user_scrn_names)
 list_tup = cur.fetchall()
@@ -196,6 +200,7 @@ more_than_25_rts = cur.fetchall()
 
 # Make a query to select all the descriptions (descriptions only) of the users who have favorited more than 25 tweets. 
 # Access all those strings, and save them in a variable called descriptions_fav_users, which should ultimately be a list of strings.
+
 desc_users_fav = "SELECT description FROM Users WHERE (num_favs > 25)"
 cur.execute(desc_users_fav)
 descriptions_fav_tups = cur.fetchall()
@@ -208,6 +213,7 @@ descriptions_fav_users = [str(i) for i in descriptions_fav_tups]
 
 # Make a query using an INNER JOIN to get a list of tuples with 2 elements in each tuple: the user screenname and the text of the tweet 
 # -- for each tweet that has been retweeted more than 50 times. Save the resulting list of tuples in a variable called joined_result.
+
 query_join = "SELECT Users.screen_name, Tweets.text from Users INNER JOIN Tweets ON instr(Users.user_id, Tweets.user_id) WHERE (Tweets.retweets > 50)"
 
 cur.execute(query_join)
@@ -218,17 +224,12 @@ joined_result = cur.fetchall()
 
 ## Use a set comprehension to get a set of all words (combinations of characters separated by whitespace) among the 
 ## descriptions in the descriptions_fav_users list. Save the resulting set in a variable called description_words.
-
-
-
-
+description_words = {i.strip() for i in descriptions_fav_users}
 
 
 ## Use a Counter in the collections library to find the most common character among all of the descriptions in the 
 ## descriptions_fav_users list. Save that most common character in a variable called most_common_char. Break any tie alphabetically 
 ## (but using a Counter will do a lot of work for you...).
-
-
 
 
 ## Putting it all together...
