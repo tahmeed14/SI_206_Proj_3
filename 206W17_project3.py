@@ -14,6 +14,7 @@ import twitter_info # same deal as always...
 import json
 import sqlite3
 import codecs #Need for windows
+import string
 
 ## Your name:Tahmeed Tureen
 ## The names of anyone you worked with on this project: Lauren Sigurdson
@@ -131,7 +132,6 @@ cur.execute(table_spec2)
 # print(keys)
 
 # Must change
-
 tweet_list_4Users = []
 for tweet in umich_tweets:
 	user_id = tweet["user"]["id_str"]
@@ -149,10 +149,18 @@ sql_state1 = "INSERT OR IGNORE INTO Users VALUES (?,?,?,?)"
 for i in tweet_list_4Users:
 	cur.execute(sql_state1, i)
 
+for tweet in umich_tweets:
+	mentioned_name = tweet["entities"]["user_mentions"]
+	for mention in mentioned_name:
+		sweg = api.get_user(mention["screen_name"])
+
+		cur.execute("INSERT OR IGNORE INTO Users VALUES (?,?,?,?)", (sweg["id_str"], sweg["screen_name"], sweg["favourites_count"], sweg["description"]))
+
 conn.commit() #COMMIT CHANGES
 
 tweet_list_4Tweets = []
 for tweet in umich_tweets: 
+	#print(tweet)
 
 	tweet_id = tweet["id_str"]
 	text = tweet["text"]
@@ -175,7 +183,6 @@ conn.commit() #COMMIT CHANGES
 
 # All of the following sub-tasks require writing SQL statements and executing them using Python.
 
-
 # Make a query to select all of the records in the Users database. Save the list of tuples in a variable called users_info.
 
 records_stuff = "SELECT * FROM Users"
@@ -189,7 +196,9 @@ user_scrn_names = "SELECT screen_name FROM Users"
 cur.execute(user_scrn_names)
 list_tup = cur.fetchall()
 
-screen_names = [str(i) for i in list_tup]
+screen_names = [i[0] for i in list_tup]
+
+#screen_names = [str(i) for i in list_tup]
 
 # Make a query to select all of the tweets (full rows of tweet information) that have been retweeted more than 25 times. 
 # Save the result (a list of tuples, or an empty list) in a variable called more_than_25_rts.
@@ -209,7 +218,7 @@ descriptions_fav_tups = cur.fetchall()
 # for i in descriptions_fav_tups:
 # 	descriptions_fav_users.append(str(i))
 
-descriptions_fav_users = [str(i) for i in descriptions_fav_tups]
+descriptions_fav_users = [i[0] for i in descriptions_fav_tups]
 
 # Make a query using an INNER JOIN to get a list of tuples with 2 elements in each tuple: the user screenname and the text of the tweet 
 # -- for each tweet that has been retweeted more than 50 times. Save the resulting list of tuples in a variable called joined_result.
@@ -224,19 +233,32 @@ joined_result = cur.fetchall()
 
 ## Use a set comprehension to get a set of all words (combinations of characters separated by whitespace) among the 
 ## descriptions in the descriptions_fav_users list. Save the resulting set in a variable called description_words.
-description_words = {i.strip() for i in descriptions_fav_users}
+description_words = {word for line in descriptions_fav_users for word in line.split()}
 
+# print(description_words)
 
 ## Use a Counter in the collections library to find the most common character among all of the descriptions in the 
 ## descriptions_fav_users list. Save that most common character in a variable called most_common_char. Break any tie alphabetically 
 ## (but using a Counter will do a lot of work for you...).
+countinuous_var = collections.Counter()
 
+for word in descriptions_fav_users: #for each word in our set
+	for char in word.split(): #for each character in word
+		for z in list(char):
+			if z in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ": #To only get ascii characters
+				countinuous_var[z.lower()] += 1
+
+most_common_char = countinuous_var.most_common(1)[0][0]
+#print(most_common_char)
 
 ## Putting it all together...
 # Write code to create a dictionary whose keys are Twitter screen names and whose associated values are lists of tweet texts that 
 # that user posted. You may need to make additional queries to your database! To do this, you can use, and must use at least one of: 
-# the DefaultDict container in the collections library, a dictionary comprehension, list comprehension(s). Y
+# the DefaultDict container in the collections library, a dictionary comprehension, list comprehension(s).
 # You should save the final dictionary in a variable called twitter_info_diction.
+
+
+
 
 conn.close()
 
@@ -341,7 +363,7 @@ class Task3(unittest.TestCase):
 
 class Task4(unittest.TestCase):
 	def test_description_words(self):
-		print("To help test, description words looks like:", description_words)
+		# print("To help test, description words looks like:", description_words)
 		self.assertEqual(type(description_words),type({"hi","Bye"}),"Testing that description words is a set")
 	def test_common_char(self):
 		self.assertEqual(type(most_common_char),type(""),"Testing that most_common_char is a string")
