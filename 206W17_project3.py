@@ -17,7 +17,7 @@ import codecs #Need for windows
 import string
 
 ## Your name:Tahmeed Tureen
-## The names of anyone you worked with on this project: Lauren Sigurdson
+## The names of anyone you worked with on this project: Lauren Sigurdson, Yuting Wu
 
 #####
 
@@ -52,7 +52,6 @@ try:
 except:
 	CACHE_DICTION = {}
 
-
 # Define your function get_user_tweets here:
 def get_user_tweets(word):
 	unique_identifier = "twitter_{}".format(word)
@@ -71,8 +70,9 @@ def get_user_tweets(word):
 
 
 # Write an invocation to the function for the "umich" user timeline and save the result in a variable called umich_tweets:
+
 umich_tweets = get_user_tweets("umich")
-# print('right HERe')
+
 # print(len(umich_tweets))
 
 ## Task 2 - Creating database and loading data into database
@@ -131,7 +131,8 @@ cur.execute(table_spec2)
 
 # print(keys)
 
-# Must change
+##*************************************************** CREATING Users TABLE ****************************************************************##
+
 tweet_list_4Users = []
 for tweet in umich_tweets:
 	user_id = tweet["user"]["id_str"]
@@ -143,7 +144,36 @@ for tweet in umich_tweets:
 
 	tweet_list_4Users.append(tuple_4Users)
 
-	#if "screen_name" in tweet[]
+## *********************************** SET UP CACHING TO AVOID RATE LIMIT **************************************##
+
+CACHE_FNAME2 = "SI206_users_table_cache.json"
+try:
+	cache_file2 = open(CACHE_FNAME2, "r")
+	cache_contents2 = cache_file2.read()
+	cache_file2.close()
+	CACHE_DICTION2 = json.loads(cache_contents2)
+
+except:
+	CACHE_DICTION2 = {}
+
+##************************************ MY PERSONAL FUNCTION TO GET ALL MENTIONS ******************************************##
+#This function only works especially for this code file only
+def get_user_mentions(word):
+	#unique_identifier2 = "twitter_{}".format(word["screen_name"])
+	unique_identifier2 = word["screen_name"] 
+
+	if unique_identifier2 in CACHE_DICTION2:
+		mentioned_stuff = CACHE_DICTION2[unique_identifier2]
+	else:
+		mentioned_stuff = api.get_user(word["screen_name"])
+		
+		CACHE_DICTION2[unique_identifier2] = mentioned_stuff
+
+		file2 = codecs.open(CACHE_FNAME2, "w", encoding = "utf-8")
+		file2.write(json.dumps(CACHE_DICTION2))
+		file2.close()
+
+	return mentioned_stuff
 
 sql_state1 = "INSERT OR IGNORE INTO Users VALUES (?,?,?,?)"
 for i in tweet_list_4Users:
@@ -151,12 +181,17 @@ for i in tweet_list_4Users:
 
 for tweet in umich_tweets:
 	mentioned_name = tweet["entities"]["user_mentions"]
+	
 	for mention in mentioned_name:
-		sweg = api.get_user(mention["screen_name"])
+		
+		sweg = get_user_mentions(mention) #Using my defined function, see above
+		#sweg = api.get_user(mention["screen_name"])
 
 		cur.execute("INSERT OR IGNORE INTO Users VALUES (?,?,?,?)", (sweg["id_str"], sweg["screen_name"], sweg["favourites_count"], sweg["description"]))
 
 conn.commit() #COMMIT CHANGES
+
+##*********************************************** CREATING Tweets TABLE *****************************************************************##
 
 tweet_list_4Tweets = []
 for tweet in umich_tweets: 
@@ -203,14 +238,15 @@ screen_names = [i[0] for i in list_tup]
 # Make a query to select all of the tweets (full rows of tweet information) that have been retweeted more than 25 times. 
 # Save the result (a list of tuples, or an empty list) in a variable called more_than_25_rts.
 
-tweets_rtwd_25 = "SELECT * FROM Tweets WHERE (retweets > 25)"
+tweets_rtwd_25 = "SELECT * FROM Tweets WHERE (retweets > 25)" #Works for my database but not for new database when I deleted my original cache
 cur.execute(tweets_rtwd_25)
 more_than_25_rts = cur.fetchall()
+
 
 # Make a query to select all the descriptions (descriptions only) of the users who have favorited more than 25 tweets. 
 # Access all those strings, and save them in a variable called descriptions_fav_users, which should ultimately be a list of strings.
 
-desc_users_fav = "SELECT description FROM Users WHERE (num_favs > 25)"
+desc_users_fav = "SELECT description FROM Users WHERE (num_favs > 25)" #Works for my database and new database when I deleted my original cache
 cur.execute(desc_users_fav)
 descriptions_fav_tups = cur.fetchall()
 
@@ -225,6 +261,8 @@ descriptions_fav_users = [i[0] for i in descriptions_fav_tups]
 
 query_join = "SELECT Users.screen_name, Tweets.text from Users INNER JOIN Tweets ON instr(Users.user_id, Tweets.user_id) WHERE (Tweets.retweets > 50)"
 
+#Works for my database but not a new database I create after I deleted my original cache
+
 cur.execute(query_join)
 joined_result = cur.fetchall()
 
@@ -233,6 +271,7 @@ joined_result = cur.fetchall()
 
 ## Use a set comprehension to get a set of all words (combinations of characters separated by whitespace) among the 
 ## descriptions in the descriptions_fav_users list. Save the resulting set in a variable called description_words.
+
 description_words = {word for line in descriptions_fav_users for word in line.split()}
 
 # print(description_words)
@@ -240,25 +279,67 @@ description_words = {word for line in descriptions_fav_users for word in line.sp
 ## Use a Counter in the collections library to find the most common character among all of the descriptions in the 
 ## descriptions_fav_users list. Save that most common character in a variable called most_common_char. Break any tie alphabetically 
 ## (but using a Counter will do a lot of work for you...).
-countinuous_var = collections.Counter()
+
+countinuous_var = collections.Counter() #Counter will break any ties!!!
 
 for word in descriptions_fav_users: #for each word in our set
 	for char in word.split(): #for each character in word
 		for z in list(char):
 			if z in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ": #To only get ascii characters
-				countinuous_var[z.lower()] += 1
+				
+				countinuous_var[z.lower()] += 1 #lower to compensate for not recounting capitalized and non capitalized letters
 
 most_common_char = countinuous_var.most_common(1)[0][0]
+
+#print(countinuous_var.most_common(1)) #returns list
+#print(countinuous_var.most_common(1)[0]) #returns tuple
+#print(countinuous_var.most_common(1)[0][0]) #returns char!!
+
 #print(most_common_char)
 
 ## Putting it all together...
+
 # Write code to create a dictionary whose keys are Twitter screen names and whose associated values are lists of tweet texts that 
 # that user posted. You may need to make additional queries to your database! To do this, you can use, and must use at least one of: 
 # the DefaultDict container in the collections library, a dictionary comprehension, list comprehension(s).
 # You should save the final dictionary in a variable called twitter_info_diction.
 
+# keys_list = []
+# for i in all_scrn_name:
+# 	keys_list.append(i[0])
 
+# entry_list = []
+# for j in 
 
+query_join = "SELECT Users.screen_name, Tweets.text from Users INNER JOIN Tweets ON instr(Users.user_id, Tweets.user_id)"
+cur.execute(query_join)
+list_here = cur.fetchall()
+
+key_list = [tup[0] for tup in list_here] #used list comprehension
+value_list = [tup[1] for tup in list_here] #used list comprehension
+
+#print(key_list)
+#print(value_list)
+
+# key_list = ["bruh", "sis", "bruh"]
+# value_list = ["yay", "nah", "whatever!"]
+
+# Note that elements in key_list and value_list are respectful to eachother based on their index values
+# key_list[3] is the key for value_list[3]
+
+twitter_info_diction = {} #initialize dict
+
+for i in range(20):
+	print(i)
+
+	if key_list[i] in twitter_info_diction.keys(): #If that key exists then we'll just append its respective tweet to it's value list
+		twitter_info_diction[key_list[i]].append(value_list[i])
+	
+	else:
+		twitter_info_diction[key_list[i]] = [value_list[i]]  #If key is not in the dict already, then we'll create the key and assign it's value right there!
+
+# print(twitter_info_diction["UMich"])
+# print(len(twitter_info_diction["UMich"]))		
 
 conn.close()
 
