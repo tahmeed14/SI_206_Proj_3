@@ -2,7 +2,10 @@
 ## Project 3
 ## Building on HW6, HW7 (and some previous material!)
 
-## NOTE: There are tests for this project, but the tests are NOT exhaustive -- you should pass them, but ONLY passing them is not necessarily sufficient to get 100% on the project. The caching must work correctly, the queries/manipulations must follow the instructions and work properly. You can ensure they do by testing just the way we always do in class -- try stuff out, print stuff out, use the SQLite DB Browser and see if it looks ok!
+## NOTE: There are tests for this project, but the tests are NOT exhaustive -- you should pass them, but ONLY passing them is not necessarily sufficient to get 100% on the project. 
+## The caching must work correctly, the queries/manipulations must follow the instructions and work properly. 
+## You can ensure they do by testing just the way we always do in class -- 
+## try stuff out, print stuff out, use the SQLite DB Browser and see if it looks ok!
 
 ## You may turn the project in late as a comment to the project assignment at a deduction of 10 percent of the grade per day late. This is SEPARATE from the late assignment submissions available for your HW.
 
@@ -17,6 +20,7 @@ import codecs #Need for windows
 import string
 
 ## Your name:Tahmeed Tureen
+## Discussion: FRIDAY 1-2PM with Mauli
 ## The names of anyone you worked with on this project: Lauren Sigurdson, Yuting Wu
 
 #####
@@ -57,8 +61,10 @@ def get_user_tweets(word):
 	unique_identifier = "twitter_{}".format(word)
 
 	if unique_identifier in CACHE_DICTION:
+		#print("ACCESSED CACHED DATA FOR TWEETS")
 		tweets_retrieved = CACHE_DICTION[unique_identifier]
 	else:
+		#print("ACCESSED TWITTER FOR TWEETS")
 		tweets_retrieved = api.user_timeline(id = word)
 		CACHE_DICTION[unique_identifier] = tweets_retrieved
 
@@ -163,8 +169,10 @@ def get_user_mentions(word):
 	unique_identifier2 = word["screen_name"] 
 
 	if unique_identifier2 in CACHE_DICTION2:
+		#print("ACCESSED CACHED DATA FOR Users")
 		mentioned_stuff = CACHE_DICTION2[unique_identifier2]
 	else:
+		#print("ACCESSED TWITTER FOR DATA")
 		mentioned_stuff = api.get_user(word["screen_name"])
 		
 		CACHE_DICTION2[unique_identifier2] = mentioned_stuff
@@ -224,6 +232,10 @@ records_stuff = "SELECT * FROM Users"
 cur.execute(records_stuff)
 users_info = cur.fetchall()
 
+# for i in users_info:
+# 	print(type(i))
+# 	print(type(i[2]))
+
 # Make a query to select all of the user screen names from the database. Save a resulting list of strings 
 # (NOT tuples, the strings inside them!) in the variable screen_names. HINT: a list comprehension will make this easier to complete!
 
@@ -242,6 +254,7 @@ tweets_rtwd_25 = "SELECT * FROM Tweets WHERE (retweets > 25)" #Works for my data
 cur.execute(tweets_rtwd_25)
 more_than_25_rts = cur.fetchall()
 
+#print(more_than_25_rts[0][3])
 
 # Make a query to select all the descriptions (descriptions only) of the users who have favorited more than 25 tweets. 
 # Access all those strings, and save them in a variable called descriptions_fav_users, which should ultimately be a list of strings.
@@ -250,11 +263,9 @@ desc_users_fav = "SELECT description FROM Users WHERE (num_favs > 25)" #Works fo
 cur.execute(desc_users_fav)
 descriptions_fav_tups = cur.fetchall()
 
-# descriptions_fav_users = []
-# for i in descriptions_fav_tups:
-# 	descriptions_fav_users.append(str(i))
-
 descriptions_fav_users = [i[0] for i in descriptions_fav_tups]
+
+#print(type(descriptions_fav_users[0][0]))
 
 # Make a query using an INNER JOIN to get a list of tuples with 2 elements in each tuple: the user screenname and the text of the tweet 
 # -- for each tweet that has been retweeted more than 50 times. Save the resulting list of tuples in a variable called joined_result.
@@ -262,7 +273,6 @@ descriptions_fav_users = [i[0] for i in descriptions_fav_tups]
 query_join = "SELECT Users.screen_name, Tweets.text from Users INNER JOIN Tweets ON instr(Users.user_id, Tweets.user_id) WHERE (Tweets.retweets > 50)"
 
 #Works for my database but not a new database I create after I deleted my original cache
-
 cur.execute(query_join)
 joined_result = cur.fetchall()
 
@@ -274,7 +284,6 @@ joined_result = cur.fetchall()
 
 description_words = {word for line in descriptions_fav_users for word in line.split()}
 
-# print(description_words)
 
 ## Use a Counter in the collections library to find the most common character among all of the descriptions in the 
 ## descriptions_fav_users list. Save that most common character in a variable called most_common_char. Break any tie alphabetically 
@@ -282,20 +291,17 @@ description_words = {word for line in descriptions_fav_users for word in line.sp
 
 countinuous_var = collections.Counter() #Counter will break any ties!!!
 
-for word in descriptions_fav_users: #for each word in our set
-	for char in word.split(): #for each character in word
-		for z in list(char):
-			if z in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ": #To only get ascii characters
-				
-				countinuous_var[z.lower()] += 1 #lower to compensate for not recounting capitalized and non capitalized letters
+for line in descriptions_fav_users: #for each desc in our list
+	for word in line.split(): #for each word in line
+		for char in list(word):
+			if char in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ": #To only get ascii characters
+				countinuous_var[char.lower()] += 1 #lower to compensate for not recounting capitalized and non capitalized letters
 
 most_common_char = countinuous_var.most_common(1)[0][0]
 
 #print(countinuous_var.most_common(1)) #returns list
 #print(countinuous_var.most_common(1)[0]) #returns tuple
-#print(countinuous_var.most_common(1)[0][0]) #returns char!!
-
-#print(most_common_char)
+#print(countinuous_var.most_common(1)[0][0]) #returns char
 
 ## Putting it all together...
 
@@ -303,13 +309,6 @@ most_common_char = countinuous_var.most_common(1)[0][0]
 # that user posted. You may need to make additional queries to your database! To do this, you can use, and must use at least one of: 
 # the DefaultDict container in the collections library, a dictionary comprehension, list comprehension(s).
 # You should save the final dictionary in a variable called twitter_info_diction.
-
-# keys_list = []
-# for i in all_scrn_name:
-# 	keys_list.append(i[0])
-
-# entry_list = []
-# for j in 
 
 query_join = "SELECT Users.screen_name, Tweets.text from Users INNER JOIN Tweets ON instr(Users.user_id, Tweets.user_id)"
 cur.execute(query_join)
@@ -324,28 +323,28 @@ value_list = [tup[1] for tup in list_here] #used list comprehension
 # key_list = ["bruh", "sis", "bruh"]
 # value_list = ["yay", "nah", "whatever!"]
 
-# Note that elements in key_list and value_list are respectful to eachother based on their index values
-# key_list[3] is the key for value_list[3]
+#Note that elements in key_list and value_list are respectful to eachother based on their index values key_list[3] is the key for value_list[3]
 
 twitter_info_diction = {} #initialize dict
 
-for i in range(20):
-	print(i)
+len_keylist = len(key_list)
+#print(len_keylist)
 
+for i in range(len_keylist):
+	#print(i)
 	if key_list[i] in twitter_info_diction.keys(): #If that key exists then we'll just append its respective tweet to it's value list
 		twitter_info_diction[key_list[i]].append(value_list[i])
 	
 	else:
 		twitter_info_diction[key_list[i]] = [value_list[i]]  #If key is not in the dict already, then we'll create the key and assign it's value right there!
 
+#print(twitter_info_diction)
 # print(twitter_info_diction["UMich"])
-# print(len(twitter_info_diction["UMich"]))		
+#print(len(twitter_info_diction["UMich"]))		
 
 conn.close()
 
-
 ### IMPORTANT: MAKE SURE TO CLOSE YOUR DATABASE CONNECTION AT THE END OF THE FILE HERE SO YOU DO NOT LOCK YOUR DATABASE (it's fixable, but it's a pain). ###
-
 
 ###### TESTS APPEAR BELOW THIS LINE ######
 ###### Note that the tests are necessary to pass, but not sufficient -- must make sure you've followed the instructions accurately! ######
