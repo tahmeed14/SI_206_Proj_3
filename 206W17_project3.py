@@ -297,7 +297,19 @@ for line in descriptions_fav_users: #for each desc in our list
 			if char in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ": #To only get ascii characters
 				countinuous_var[char.lower()] += 1 #lower to compensate for not recounting capitalized and non capitalized letters
 
-most_common_char = countinuous_var.most_common(1)[0][0]
+#print(countinuous_var)
+
+#common_tup = [('z',30), ('a',30), ('b', 30)]
+common_tup = countinuous_var.most_common(1)
+#print(common_tup)
+sort_first = sorted(common_tup, key = lambda var: var[0])
+#print(sort_first)
+sort_2nd = sorted(sort_first, key = lambda var: var[1], reverse = True)
+#print(sort_2nd)
+most_common_char = sort_2nd[0][0]
+#print(most_common_char)
+
+#print("The most common char is", most_common_char)
 
 #print(countinuous_var.most_common(1)) #returns list
 #print(countinuous_var.most_common(1)[0]) #returns tuple
@@ -321,7 +333,7 @@ value_list = [tup[1] for tup in list_here] #used list comprehension
 #print(value_list)
 
 # key_list = ["bruh", "sis", "bruh"]
-# value_list = ["yay", "nah", "whatever!"]
+# value_list = ["ya", "nah", "suh!"]
 
 #Note that elements in key_list and value_list are respectful to eachother based on their index values key_list[3] is the key for value_list[3]
 
